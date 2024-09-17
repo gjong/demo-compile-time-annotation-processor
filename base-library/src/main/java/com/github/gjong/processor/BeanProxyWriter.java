@@ -2,20 +2,22 @@ package com.github.gjong.processor;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Optional;
 import java.util.function.Function;
 
 class BeanProxyWriter {
     private final BeanDefinition definition;
     private final String definedClassName;
-    private final Function<TypeMirror, String> parameterResolver;
+    private final Function<BeanDefinition.ArgumentDefinition, String> parameterResolver;
 
     public BeanProxyWriter(BeanDefinition definition) {
         this.definition = definition;
         this.definedClassName = "%s$Proxy".formatted(definition.type().getSimpleName());
-        this.parameterResolver = "provider.provide(%s.class)"::formatted;
+        this.parameterResolver = typeMirror -> Optional.ofNullable(typeMirror.qualifier())
+                    .map(qualifier -> "provider.provide(\"%s\")".formatted(qualifier.value()))
+                    .orElseGet(() -> "provider.provide(%s.class)".formatted(typeMirror.type()));
     }
 
     void writeSourceFile(ProcessingEnvironment environment) {
@@ -69,6 +71,10 @@ class BeanProxyWriter {
             writer.println();
             writer.println("    public Class<%s> type() {".formatted(beanClass.getSimpleName()));
             writer.println("        return %s.class;".formatted(beanClass.getSimpleName()));
+            writer.println("    }");
+            writer.println();
+            writer.println("    public String qualifier() {");
+            writer.println("        return \"%s\";".formatted(bean.name()));
             writer.println("    }");
             writer.println("}");
         } catch (IOException e) {

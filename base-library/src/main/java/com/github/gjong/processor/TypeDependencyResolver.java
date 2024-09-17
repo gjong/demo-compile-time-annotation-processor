@@ -1,12 +1,12 @@
 package com.github.gjong.processor;
 
 import com.github.gjong.cdi.Inject;
+import com.github.gjong.cdi.Qualifier;
 
 import javax.annotation.processing.Messager;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
 import java.util.Optional;
 
@@ -33,7 +33,7 @@ class TypeDependencyResolver {
 
         var dependencies = constructor.getParameters()
                 .stream()
-                .map(VariableElement::asType)
+                .map(arg -> new BeanDefinition.ArgumentDefinition(arg.asType(), arg.getAnnotation(Qualifier.class)))
                 .toList();
 
         return new BeanDefinition(typeElement, dependencies);

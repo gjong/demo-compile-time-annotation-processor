@@ -5,7 +5,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target(ElementType.PACKAGE)
+@Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.SOURCE)
-public @interface ComponentScan {
+public @interface Qualifier {
+    String value();
 }
